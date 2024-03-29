@@ -3,7 +3,7 @@ from PyInstaller.__main__ import run as pyinstaller_run
 import subprocess
 
 # Specify the required dependencies
-dependencies = ["tkcalendar", "pyinstaller"]
+dependencies = ["tkcalendar", "pyinstaller", "ttkbootstrap"]
 
 # Install dependencies
 for dependency in dependencies:
