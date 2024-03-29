@@ -187,107 +187,100 @@ def apply_filters():
 
     display_data(sort_column="id", sort_order="ASC", filters=filters)
 
-def display_filters():
-    filters_frame = tkinter.Frame(window)
-    filters_frame.pack(pady=10)
+window = tkinter.Tk()
+window.title("PrichosApp")
+window.geometry("800x600")
+window.configure(bg="#FEFDED")
 
-    product_name_filter_label = tkinter.Label(filters_frame, text="Product Name:")
-    product_name_filter_label.grid(row=0, column=0, padx=5)
-    product_name_filter_entry = tkinter.Entry(filters_frame)
-    product_name_filter_entry.grid(row=0, column=1, padx=5)
+frame = tkinter.Frame(window)
+frame.pack(fill="both", expand=True)
 
-    price_filter_label = tkinter.Label(filters_frame, text="Price:")
-    price_filter_label.grid(row=0, column=2, padx=5)
-    price_filter_entry = tkinter.Entry(filters_frame)
-    price_filter_entry.grid(row=0, column=3, padx=5)
+tree = ttk.Treeview(frame)
+tree["columns"] = ("ID", "Product Name", "Price", "Quantity", "Weight", "Date", "Place", "Categories")
+tree.heading("ID", text="ID")
+tree.heading("Product Name", text="Product Name")
+tree.heading("Price", text="Price")
+tree.heading("Quantity", text="Quantity")
+tree.heading("Weight", text="Weight")
+tree.heading("Date", text="Date")
+tree.heading("Place", text="Place")
+tree.heading("Categories", text="Categories")
 
-    quantity_filter_label = tkinter.Label(filters_frame, text="Quantity:")
-    quantity_filter_label.grid(row=0, column=4, padx=5)
-    quantity_filter_entry = tkinter.Entry(filters_frame)
-    quantity_filter_entry.grid(row=0, column=5, padx=5)
+for column in tree["columns"]:
+    tree.column(column, width=100)
+tree.column("#0", width=0)
+tree.column("ID", width=20)
+tree.column("Price", width=30)
+tree.column("Quantity", width=30)
+tree.column("Weight", width=50)
+tree.column("Date", width=50)
 
-    weight_filter_label = tkinter.Label(filters_frame, text="Weight:")
-    weight_filter_label.grid(row=0, column=6, padx=5)
-    weight_filter_entry = tkinter.Entry(filters_frame)
-    weight_filter_entry.grid(row=0, column=7, padx=5)
+vsb = tkinter.Scrollbar(frame, orient="vertical", command=tree.yview)
+vsb.pack(side="right", fill="y")
 
-    purchase_date_filter_label = tkinter.Label(filters_frame, text="Purchase Date:")
-    purchase_date_filter_label.grid(row=1, column=0, padx=5)
-    purchase_date_filter_entry = tkinter.Entry(filters_frame)
-    purchase_date_filter_entry.grid(row=1, column=1, padx=5)
+tree.configure(yscrollcommand=vsb.set)
+tree.pack(fill="both", expand=True)
 
-    purchase_place_filter_label = tkinter.Label(filters_frame, text="Purchase Place:")
-    purchase_place_filter_label.grid(row=1, column=2, padx=5)
-    purchase_place_filter_entry = tkinter.Entry(filters_frame)
-    purchase_place_filter_entry.grid(row=1, column=3, padx=5)
+tree.bind("<Double-1>", on_item_double_click)
+tree.bind("<<TreeviewSelect>>", on_tree_select)
 
-    categories_filter_label = tkinter.Label(filters_frame, text="Categories:")
-    categories_filter_label.grid(row=1, column=4, padx=5)
-    categories_filter_entry = tkinter.Entry(filters_frame)
-    categories_filter_entry.grid(row=1, column=5, padx=5)
-    
-    # Filter button
-    filter_button = tkinter.Button(filters_frame, text="Reload", command=apply_filters)
-    filter_button.grid(row=1, column=6, padx=5, pady=5)
-    
-def display_buttons():
-   # Button frame
-    button_frame = tkinter.Frame(window)
-    button_frame.pack(pady=10)
+# Filter entry widgets
+filters_frame = tkinter.Frame(window)
+filters_frame.pack(pady=10)
 
-    display_button = tkinter.Button(button_frame, text="Display Data", command=lambda: display_data("id", "ASC"), width=20, bg="#A1C398", fg="white", pady=10)
-    display_button.grid(row=0, column=0, padx=5)
+product_name_filter_label = tkinter.Label(filters_frame, text="Product Name:")
+product_name_filter_label.grid(row=0, column=0, padx=5)
+product_name_filter_entry = tkinter.Entry(filters_frame)
+product_name_filter_entry.grid(row=0, column=1, padx=5)
 
-    add_edit_button = tkinter.Button(button_frame, text="Add/Edit Item", command=add_edit_item, width=20, bg="#A1C398", fg="white", pady=10)
-    add_edit_button.grid(row=0, column=1, padx=5)
+price_filter_label = tkinter.Label(filters_frame, text="Price:")
+price_filter_label.grid(row=0, column=2, padx=5)
+price_filter_entry = tkinter.Entry(filters_frame)
+price_filter_entry.grid(row=0, column=3, padx=5)
 
-    delete_button = tkinter.Button(button_frame, text="Delete Item", command=delete_selected_item, state="disabled", width=20, bg="#A1C398", fg="white", pady=10)
-    delete_button.grid(row=0, column=2, padx=5)
-    
-def display_window():
-    window = tkinter.Tk()
-    window.title("PrichosApp")
-    window.geometry("800x600")
-    window.configure(bg="#FEFDED")
+quantity_filter_label = tkinter.Label(filters_frame, text="Quantity:")
+quantity_filter_label.grid(row=0, column=4, padx=5)
+quantity_filter_entry = tkinter.Entry(filters_frame)
+quantity_filter_entry.grid(row=0, column=5, padx=5)
 
-    frame = tkinter.Frame(window)
-    frame.pack(fill="both", expand=True)
-    
-def display_datatable():
-    tree = ttk.Treeview(frame)
-    tree["columns"] = ("ID", "Product Name", "Price", "Quantity", "Weight", "Date", "Place", "Categories")
-    tree.heading("ID", text="ID")
-    tree.heading("Product Name", text="Product Name")
-    tree.heading("Price", text="Price")
-    tree.heading("Quantity", text="Quantity")
-    tree.heading("Weight", text="Weight")
-    tree.heading("Date", text="Date")
-    tree.heading("Place", text="Place")
-    tree.heading("Categories", text="Categories")
+weight_filter_label = tkinter.Label(filters_frame, text="Weight:")
+weight_filter_label.grid(row=0, column=6, padx=5)
+weight_filter_entry = tkinter.Entry(filters_frame)
+weight_filter_entry.grid(row=0, column=7, padx=5)
 
-    for column in tree["columns"]:
-        tree.column(column, width=100)
-    tree.column("#0", width=0)
-    tree.column("ID", width=20)
-    tree.column("Price", width=30)
-    tree.column("Quantity", width=30)
-    tree.column("Weight", width=50)
-    tree.column("Date", width=50)
+purchase_date_filter_label = tkinter.Label(filters_frame, text="Purchase Date:")
+purchase_date_filter_label.grid(row=1, column=0, padx=5)
+purchase_date_filter_entry = tkinter.Entry(filters_frame)
+purchase_date_filter_entry.grid(row=1, column=1, padx=5)
 
-    vsb = tkinter.Scrollbar(frame, orient="vertical", command=tree.yview)
-    vsb.pack(side="right", fill="y")
+purchase_place_filter_label = tkinter.Label(filters_frame, text="Purchase Place:")
+purchase_place_filter_label.grid(row=1, column=2, padx=5)
+purchase_place_filter_entry = tkinter.Entry(filters_frame)
+purchase_place_filter_entry.grid(row=1, column=3, padx=5)
 
-    tree.configure(yscrollcommand=vsb.set)
-    tree.pack(fill="both", expand=True)
+categories_filter_label = tkinter.Label(filters_frame, text="Categories:")
+categories_filter_label.grid(row=1, column=4, padx=5)
+categories_filter_entry = tkinter.Entry(filters_frame)
+categories_filter_entry.grid(row=1, column=5, padx=5)
 
-    tree.bind("<Double-1>", on_item_double_click)
-    tree.bind("<<TreeviewSelect>>", on_tree_select)
+# Filter button
+filter_button = tkinter.Button(filters_frame, text="Reload", command=apply_filters)
+filter_button.grid(row=1, column=6, padx=5, pady=5)
 
-create_table()    
-display_window()
-display_datatable()
-display_filters()
-display_buttons()
+# Button frame
+button_frame = tkinter.Frame(window)
+button_frame.pack(pady=10)
+
+display_button = tkinter.Button(button_frame, text="Display Data", command=lambda: display_data("id", "ASC"), width=20, bg="#A1C398", fg="white", pady=10)
+display_button.grid(row=0, column=0, padx=5)
+
+add_edit_button = tkinter.Button(button_frame, text="Add/Edit Item", command=add_edit_item, width=20, bg="#A1C398", fg="white", pady=10)
+add_edit_button.grid(row=0, column=1, padx=5)
+
+delete_button = tkinter.Button(button_frame, text="Delete Item", command=delete_selected_item, state="disabled", width=20, bg="#A1C398", fg="white", pady=10)
+delete_button.grid(row=0, column=2, padx=5)
+
+create_table()
 display_data()
 
 window.mainloop()
