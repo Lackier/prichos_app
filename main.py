@@ -1,8 +1,8 @@
-import babel.numbers
 import tkinter
 from tkinter import ttk
 from tkcalendar import DateEntry
 import sqlite3
+from datetime import datetime
 
 def display_data(sort_column="id", sort_order="ASC", filters=None):
     for row in tree.get_children():
@@ -16,8 +16,27 @@ def display_data(sort_column="id", sort_order="ASC", filters=None):
     if filters:
         for column, value in filters.items():
             if value:
-                filter_conditions.append(f"{column} LIKE ?")
-                filter_values.append(f"%{value}%")
+                if column == 'price_from':
+                    filter_conditions.append(f"price >= ?")
+                    filter_values.append(f"{value}")
+                elif column == 'price_to':
+                    filter_conditions.append(f"price <= ?")
+                    filter_values.append(f"{value}")
+                elif column == 'price_range':
+                    filter_conditions.append(f"price BETWEEN ? AND ?")
+                    filter_values.extend(value)
+                elif column == 'purchase_date_from':
+                    filter_conditions.append(f"purchase_date >= ?")
+                    filter_values.append(f"{value}")
+                elif column == 'purchase_date_to':
+                    filter_conditions.append(f"purchase_date <= ?")
+                    filter_values.append(f"{value}")
+                elif column == 'purchase_date_range':
+                    filter_conditions.append(f"purchase_date BETWEEN ? AND ?")
+                    filter_values.extend(value)
+                else:
+                    filter_conditions.append(f"{column} LIKE ?")
+                    filter_values.append(f"%{value}%")
 
     filter_condition = " AND ".join(filter_conditions)
     if filter_condition:
@@ -42,7 +61,7 @@ def create_table():
                         price REAL,
                         quantity INTEGER,
                         weight REAL,
-                        purchase_date TEXT,
+                        purchase_date DATE,
                         purchase_place TEXT,
                         categories TEXT
                     )''')
@@ -166,26 +185,58 @@ def on_tree_select(event):
         delete_button.config(state="disabled")
 
 def apply_filters():
-    # Get filter values from entry widgets
     product_name_filter = product_name_filter_entry.get()
-    price_filter = price_filter_entry.get()
+    price_filter_from = price_filter_from_entry.get()
+    price_filter_to = price_filter_to_entry.get()
     quantity_filter = quantity_filter_entry.get()
     weight_filter = weight_filter_entry.get()
-    purchase_date_filter = purchase_date_filter_entry.get()
+    purchase_date_filter_from = purchase_date_filter_from_entry.get()
+    purchase_date_filter_to = purchase_date_filter_to_entry.get()
     purchase_place_filter = purchase_place_filter_entry.get()
     categories_filter = categories_filter_entry.get()
 
-    filters = {
-        "product_name": product_name_filter,
-        "price": price_filter,
-        "quantity": quantity_filter,
-        "weight": weight_filter,
-        "purchase_date": purchase_date_filter,
-        "purchase_place": purchase_place_filter,
-        "categories": categories_filter
-    }
+    filters = {}
+    if product_name_filter:
+        filters["product_name"] = product_name_filter
+    if price_filter_from:
+        filters["price_from"] = float(price_filter_from)
+    if price_filter_to:
+        filters["price_to"] = float(price_filter_to)
+    if price_filter_from and price_filter_to:
+        filters["price_range"] = [float(price_filter_from), float(price_filter_to)]
+    if quantity_filter:
+        filters["quantity"] = quantity_filter
+    if weight_filter:
+        filters["weight"] = weight_filter
+    if purchase_date_filter_from:
+        filters["purchase_date_from"] = purchase_date_filter_from
+    if purchase_date_filter_to:
+        filters["purchase_date_to"] = purchase_date_filter_to
+    if purchase_date_filter_from and purchase_date_filter_to:
+        filters["purchase_date_range"] = [purchase_date_filter_from, purchase_date_filter_to]
+    if purchase_place_filter:
+        filters["purchase_place"] = purchase_place_filter
+    if categories_filter:
+        filters["categories"] = categories_filter
 
     display_data(sort_column="id", sort_order="ASC", filters=filters)
+
+def on_treeview_sort_column(treeview, col, reverse):
+    for column in treeview["columns"]:
+        treeview.heading(column, text=column)
+
+    data = [(treeview.set(child, col), child) for child in treeview.get_children('')]
+    data.sort(reverse=reverse)
+
+    for index, (val, child) in enumerate(data):
+        treeview.move(child, '', index)
+
+    if reverse:
+        treeview.heading(col, text=col + " ▼")
+    else:
+        treeview.heading(col, text=col + " ▲")
+
+    treeview.heading(col, command=lambda: on_treeview_sort_column(treeview, col, not reverse))
 
 window = tkinter.Tk()
 window.title("PrichosApp")
@@ -215,6 +266,9 @@ tree.column("Quantity", width=30)
 tree.column("Weight", width=50)
 tree.column("Date", width=50)
 
+for col in tree["columns"]:
+    tree.heading(col, text=col, command=lambda c=col: on_treeview_sort_column(tree, c, False))
+
 vsb = tkinter.Scrollbar(frame, orient="vertical", command=tree.yview)
 vsb.pack(side="right", fill="y")
 
@@ -228,56 +282,77 @@ tree.bind("<<TreeviewSelect>>", on_tree_select)
 filters_frame = tkinter.Frame(window)
 filters_frame.pack(pady=10)
 
-product_name_filter_label = tkinter.Label(filters_frame, text="Product Name:")
-product_name_filter_label.grid(row=0, column=0, padx=5)
-product_name_filter_entry = tkinter.Entry(filters_frame)
-product_name_filter_entry.grid(row=0, column=1, padx=5)
+# First row of filters
+first_row_filters_frame = tkinter.Frame(filters_frame)
+first_row_filters_frame.pack(side="top", padx=5, pady=5)
 
-price_filter_label = tkinter.Label(filters_frame, text="Price:")
-price_filter_label.grid(row=0, column=2, padx=5)
-price_filter_entry = tkinter.Entry(filters_frame)
-price_filter_entry.grid(row=0, column=3, padx=5)
+product_name_filter_label = tkinter.Label(first_row_filters_frame, text="Product Name:")
+product_name_filter_label.pack(side="left")
+product_name_filter_entry = tkinter.Entry(first_row_filters_frame, width=15)
+product_name_filter_entry.pack(side="left", padx=5)
 
-quantity_filter_label = tkinter.Label(filters_frame, text="Quantity:")
-quantity_filter_label.grid(row=0, column=4, padx=5)
-quantity_filter_entry = tkinter.Entry(filters_frame)
-quantity_filter_entry.grid(row=0, column=5, padx=5)
+price_filter_label = tkinter.Label(first_row_filters_frame, text="Price:")
+price_filter_label.pack(side="left", padx=5)
+price_filter_from_entry = tkinter.Entry(first_row_filters_frame, width=8)
+price_filter_from_entry.pack(side="left", padx=(0, 5))
+price_to_filter_label = tkinter.Label(first_row_filters_frame, text="to")
+price_to_filter_label.pack(side="left")
+price_filter_to_entry = tkinter.Entry(first_row_filters_frame, width=8)
+price_filter_to_entry.pack(side="left", padx=(0, 5))
 
-weight_filter_label = tkinter.Label(filters_frame, text="Weight:")
-weight_filter_label.grid(row=0, column=6, padx=5)
-weight_filter_entry = tkinter.Entry(filters_frame)
-weight_filter_entry.grid(row=0, column=7, padx=5)
+quantity_filter_label = tkinter.Label(first_row_filters_frame, text="Quantity:")
+quantity_filter_label.pack(side="left", padx=5)
+quantity_filter_entry = tkinter.Entry(first_row_filters_frame, width=8)
+quantity_filter_entry.pack(side="left", padx=(0, 5))
 
-purchase_date_filter_label = tkinter.Label(filters_frame, text="Purchase Date:")
-purchase_date_filter_label.grid(row=1, column=0, padx=5)
-purchase_date_filter_entry = tkinter.Entry(filters_frame)
-purchase_date_filter_entry.grid(row=1, column=1, padx=5)
+weight_filter_label = tkinter.Label(first_row_filters_frame, text="Weight:")
+weight_filter_label.pack(side="left", padx=5)
+weight_filter_entry = tkinter.Entry(first_row_filters_frame, width=8)
+weight_filter_entry.pack(side="left", padx=(5, 10))
 
-purchase_place_filter_label = tkinter.Label(filters_frame, text="Purchase Place:")
-purchase_place_filter_label.grid(row=1, column=2, padx=5)
-purchase_place_filter_entry = tkinter.Entry(filters_frame)
-purchase_place_filter_entry.grid(row=1, column=3, padx=5)
+# Second row of filters
+second_row_filters_frame = tkinter.Frame(filters_frame)
+second_row_filters_frame.pack(side="top", padx=5, pady=5)
 
-categories_filter_label = tkinter.Label(filters_frame, text="Categories:")
-categories_filter_label.grid(row=1, column=4, padx=5)
-categories_filter_entry = tkinter.Entry(filters_frame)
-categories_filter_entry.grid(row=1, column=5, padx=5)
+purchase_date_filter_label = tkinter.Label(second_row_filters_frame, text="Purchase Date:")
+purchase_date_filter_label.pack(side="left", padx=5)
+purchase_date_filter_from_entry = DateEntry(second_row_filters_frame, date_pattern="dd/mm/yyyy", width=10)
+purchase_date_filter_from_entry.delete(0, "end")
+purchase_date_filter_from_entry.pack(side="left", padx=0)
+purchase_date_clear_button1 = tkinter.Button(second_row_filters_frame, text="<-", command=lambda: purchase_date_filter_from_entry.delete(0, "end"))
+purchase_date_clear_button1.pack(side="left", padx=(5, 0))
+purchase_date_to_filter_label = tkinter.Label(second_row_filters_frame, text="to")
+purchase_date_to_filter_label.pack(side="left")
+purchase_date_filter_to_entry = DateEntry(second_row_filters_frame, date_pattern="dd/mm/yyyy", width=10)
+purchase_date_filter_to_entry.delete(0, "end")
+purchase_date_filter_to_entry.pack(side="left", padx=0)
+purchase_date_clear_button2 = tkinter.Button(second_row_filters_frame, text="<-", command=lambda: purchase_date_filter_to_entry.delete(0, "end"))
+purchase_date_clear_button2.pack(side="left", padx=(5, 0))
 
-# Filter button
-filter_button = tkinter.Button(filters_frame, text="Reload", command=apply_filters)
-filter_button.grid(row=1, column=6, padx=5, pady=5)
+purchase_place_filter_label = tkinter.Label(second_row_filters_frame, text="Purchase Place:")
+purchase_place_filter_label.pack(side="left", padx=5)
+purchase_place_filter_entry = tkinter.Entry(second_row_filters_frame, width=15)
+purchase_place_filter_entry.pack(side="left", padx=5)
+
+categories_filter_label = tkinter.Label(second_row_filters_frame, text="Categories:")
+categories_filter_label.pack(side="left", padx=5)
+categories_filter_entry = tkinter.Entry(second_row_filters_frame, width=15)
+categories_filter_entry.pack(side="left", padx=5)
+
+filter_button = tkinter.Button(filters_frame, text="Apply", command=apply_filters)
+filter_button.pack(pady=5)
 
 # Button frame
 button_frame = tkinter.Frame(window)
 button_frame.pack(pady=10)
 
-display_button = tkinter.Button(button_frame, text="Display Data", command=lambda: display_data("id", "ASC"), width=20, bg="#A1C398", fg="white", pady=10)
+display_button = tkinter.Button(button_frame, text="Show All", command=lambda: display_data("id", "ASC"), width=20, bg="#A1C398", fg="white", pady=10)
 display_button.grid(row=0, column=0, padx=5)
 
-add_edit_button = tkinter.Button(button_frame, text="Add/Edit Item", command=add_edit_item, width=20, bg="#A1C398", fg="white", pady=10)
+add_edit_button = tkinter.Button(button_frame, text="Add/Edit", command=add_edit_item, width=20, bg="#A1C398", fg="white", pady=10)
 add_edit_button.grid(row=0, column=1, padx=5)
 
-delete_button = tkinter.Button(button_frame, text="Delete Item", command=delete_selected_item, state="disabled", width=20, bg="#A1C398", fg="white", pady=10)
+delete_button = tkinter.Button(button_frame, text="Delete", command=delete_selected_item, state="disabled", width=20, bg="#A1C398", fg="white", pady=10)
 delete_button.grid(row=0, column=2, padx=5)
 
 create_table()
