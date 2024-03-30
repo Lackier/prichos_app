@@ -15,9 +15,12 @@ main_script = "main.py"
 output_dir = os.path.dirname(os.path.abspath(main_script))
 exe_name = "PrichosApp.exe"
 
+language_modules = ["text_en.py", "text_es.py", "text_ru.py"]
+add_data_args = [f"--add-data={module};." for module in language_modules]
 pyinstaller_args = [
     "--onefile",
     "--name", exe_name,
+    *add_data_args,
     main_script
 ]
 
