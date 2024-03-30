@@ -22,3 +22,5 @@ ADD_EDIT_BUTTON_TEXT = "Add/Edit"
 DELETE_BUTTON_TEXT = "Delete"
 SUBMIT_BUTTON_TEXT = "Submit"
 CLOSE_BUTTON_TEXT = "Close"
+
+REQUIRED_FIELDS_MESSAGE = "Required fields are missing."

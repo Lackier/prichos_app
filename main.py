@@ -321,27 +321,29 @@ def add_edit_item(selected_item=None):
     style.configure("TLabel", padding=10)
     style.configure("TButton", padding=10, background="#FA7070", foreground="white")
 
-    def create_label_entry_pair(window, text, row, column):
-        label = tkinter.Label(window, text=text)
-        label.grid(row=row, column=column, padx=5, pady=5)
+    def create_label_entry_pair(window, text, row, column, required=False):
+        label_text = text + (" *" if required else "")
+        label = tkinter.Label(window, text=label_text)
+        label.grid(row=row, column=column, padx=5, pady=5, sticky="e")
         entry = tkinter.Entry(window)
         entry.grid(row=row, column=column+1, padx=5, pady=5)
         return entry
     
-    def create_label_date_entry_pair(window, text, row, column):
-        label = tkinter.Label(window, text=text)
-        label.grid(row=row, column=column, padx=5, pady=5)
+    def create_label_date_entry_pair(window, text, row, column, required=False):
+        label_text = text + (" *" if required else "")
+        label = tkinter.Label(window, text=label_text)
+        label.grid(row=row, column=column, padx=5, pady=5, sticky="e")
         entry = DateEntry(window, date_pattern=DATE_PATTERN)
         entry.grid(row=row, column=column+1, padx=5, pady=5)
         return entry
 
-    product_name_entry = create_label_entry_pair(add_edit_window, language_module.PRODUCT_NAME_TEXT, 0, 0)
-    price_entry = create_label_entry_pair(add_edit_window, language_module.PRICE_TEXT, 1, 0)
+    product_name_entry = create_label_entry_pair(add_edit_window, language_module.PRODUCT_NAME_TEXT, 0, 0, required=True)
+    price_entry = create_label_entry_pair(add_edit_window, language_module.PRICE_TEXT, 1, 0, required=True)
     quantity_entry = create_label_entry_pair(add_edit_window, language_module.QUANTITY_TEXT, 2, 0)
     weight_entry = create_label_entry_pair(add_edit_window, language_module.WEIGHT_TEXT, 3, 0)
-    purchase_date_entry = create_label_date_entry_pair(add_edit_window, language_module.PURCHASE_DATE_TEXT, 4, 0)
+    purchase_date_entry = create_label_date_entry_pair(add_edit_window, language_module.PURCHASE_DATE_TEXT, 4, 0, required=True)
     purchase_place_entry = create_label_entry_pair(add_edit_window, language_module.PURCHASE_PLACE_TEXT, 5, 0)
-    categories_entry = create_label_entry_pair(add_edit_window, language_module.CATEGORIES_TEXT, 6, 0)
+    categories_entry = create_label_entry_pair(add_edit_window, language_module.CATEGORIES_TEXT, 6, 0, required=True)
 
     if selected_item:
         conn = sqlite3.connect('data.db')
@@ -359,7 +361,26 @@ def add_edit_item(selected_item=None):
             purchase_place_entry.insert(0, item_data[6])
             categories_entry.insert(0, item_data[7])
 
+    def validate_required_entry(entry):
+        if not entry.get():
+            if isinstance(entry, DateEntry):
+                entry.configure(bordercolor="red")
+            else:
+                entry.configure(highlightbackground="red", highlightcolor="red", highlightthickness=2)
+        else:
+            if isinstance(entry, DateEntry):
+                entry.configure(bordercolor="black")
+            else:
+                entry.configure(highlightbackground="gray", highlightcolor="gray", highlightthickness=1)
+
     def submit():
+        required_entries = [product_name_entry, price_entry, purchase_date_entry, categories_entry]
+        for entry in required_entries:
+            validate_required_entry(entry)
+            if not entry.get():
+                tkinter.messagebox.showerror("Error", language_module.REQUIRED_FIELDS_MESSAGE)
+                return
+
         product_name = product_name_entry.get()
         price = float(price_entry.get())
         quantity = quantity_entry.get()

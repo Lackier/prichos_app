@@ -22,3 +22,5 @@ ADD_EDIT_BUTTON_TEXT = "Добавить/Изменить"
 DELETE_BUTTON_TEXT = "Удалить"
 SUBMIT_BUTTON_TEXT = "Отправить"
 CLOSE_BUTTON_TEXT = "Закрыть"
+
+REQUIRED_FIELDS_MESSAGE = "Отсутствует обязательное поле."

@@ -22,3 +22,5 @@ ADD_EDIT_BUTTON_TEXT = "Agregar/Editar"
 DELETE_BUTTON_TEXT = "Borrar"
 SUBMIT_BUTTON_TEXT = "Enviar"
 CLOSE_BUTTON_TEXT = "Cerrar"
+
+REQUIRED_FIELDS_MESSAGE = "Campo obligatorio faltante."
