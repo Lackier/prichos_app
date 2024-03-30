@@ -1,6 +1,7 @@
 import babel.numbers
 import tkinter
 from tkinter import ttk
+from tkinter import filedialog
 from tkcalendar import DateEntry
 import sqlite3
 from text_en import *
@@ -169,6 +170,12 @@ def load_window(language_code):
     change_language_ru_button = tkinter.Button(languages_frame, text="RU", command=lambda: change_language("ru"))
     change_language_ru_button.grid(row=1, column=2, padx=5)
 
+    import_button = tkinter.Button(languages_frame, text="Import Data", command=import_data)
+    import_button.grid(row=1, column=3, padx=5)
+
+    export_button = tkinter.Button(languages_frame, text="Export Data", command=export_data)
+    export_button.grid(row=1, column=4, padx=5)
+
     create_table()
     display_data()
 
@@ -247,6 +254,55 @@ def create_table():
                     )''')
     conn.commit()
     conn.close()
+
+def import_data():
+    try:
+        filename = filedialog.askopenfilename(title="Select file to import")
+        if filename:
+            conn = sqlite3.connect(filename)
+            cursor = conn.cursor()
+            cursor.execute("SELECT product_name, price, quantity, weight, purchase_date, purchase_place, categories FROM Product_Data")
+            data_to_import = cursor.fetchall()
+            conn.close()
+
+            if data_to_import:
+                conn = sqlite3.connect('data.db')
+                cursor = conn.cursor()
+                cursor.executemany('''INSERT INTO Product_Data (product_name, price, quantity, weight, purchase_date, purchase_place, categories) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?)''', data_to_import)
+                conn.commit()
+                conn.close()
+                print("Data imported successfully.")
+                display_data()
+            else:
+                print("No data found in the selected file.")
+    except Exception as e:
+        print("Error importing data:", e)
+
+def export_data():
+    try:
+        filename = filedialog.asksaveasfilename(title="Save As", defaultextension=".db")
+        if filename:
+            conn = sqlite3.connect(filename)
+            cursor = conn.cursor()
+            cursor.execute('''CREATE TABLE IF NOT EXISTS Product_Data (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                product_name TEXT,
+                                price REAL,
+                                quantity INTEGER,
+                                weight REAL,
+                                purchase_date DATE,
+                                purchase_place TEXT,
+                                categories TEXT
+                            )''')
+            cursor.execute("ATTACH DATABASE 'data.db' AS toExport")
+            cursor.execute('''INSERT INTO main.Product_Data (product_name, price, quantity, weight, purchase_date, purchase_place, categories) 
+                            SELECT product_name, price, quantity, weight, purchase_date, purchase_place, categories FROM toExport.Product_Data''')
+            conn.commit()
+            conn.close()
+            print("Data exported successfully.")
+    except Exception as e:
+        print("Error exporting data:", e)
 
 def add_edit_item(selected_item=None):
     add_edit_window = tkinter.Toplevel(window)
