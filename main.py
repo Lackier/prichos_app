@@ -9,6 +9,17 @@ import importlib
 COLUMNS = ()
 DATE_PATTERN="dd/mm/yyyy"
 window = 1
+language_module = 0
+delete_button = 0
+product_name_filter_entry = 0
+price_filter_from_entry = 0
+price_filter_to_entry = 0
+quantity_filter_entry = 0
+weight_filter_entry = 0
+purchase_date_filter_from_entry = 0
+purchase_date_filter_to_entry = 0
+purchase_place_filter_entry = 0
+categories_filter_entry = 0
 
 def load_window(language_code):
     global window
@@ -18,6 +29,7 @@ def load_window(language_code):
     window.title("PrichosApp")
     window.geometry("800x600")
 
+    global language_module
     language_module = load_language_module(language_code)
 
     frame = tkinter.Frame(window)
@@ -69,25 +81,30 @@ def load_window(language_code):
 
     product_name_filter_label = tkinter.Label(first_row_filters_frame, text=language_module.PRODUCT_NAME_TEXT)
     product_name_filter_label.pack(side="left")
+    global product_name_filter_entry
     product_name_filter_entry = tkinter.Entry(first_row_filters_frame, width=15)
     product_name_filter_entry.pack(side="left", padx=5)
 
     price_filter_label = tkinter.Label(first_row_filters_frame, text=language_module.PRICE_TEXT)
     price_filter_label.pack(side="left", padx=5)
+    global price_filter_from_entry
     price_filter_from_entry = tkinter.Entry(first_row_filters_frame, width=8)
     price_filter_from_entry.pack(side="left", padx=(0, 5))
     price_to_filter_label = tkinter.Label(first_row_filters_frame, text=language_module.TO)
     price_to_filter_label.pack(side="left")
+    global price_filter_to_entry
     price_filter_to_entry = tkinter.Entry(first_row_filters_frame, width=8)
     price_filter_to_entry.pack(side="left", padx=(0, 5))
 
     quantity_filter_label = tkinter.Label(first_row_filters_frame, text=language_module.QUANTITY_TEXT)
     quantity_filter_label.pack(side="left", padx=5)
+    global quantity_filter_entry
     quantity_filter_entry = tkinter.Entry(first_row_filters_frame, width=8)
     quantity_filter_entry.pack(side="left", padx=(0, 5))
 
     weight_filter_label = tkinter.Label(first_row_filters_frame, text=language_module.WEIGHT_TEXT)
     weight_filter_label.pack(side="left", padx=5)
+    global weight_filter_entry
     weight_filter_entry = tkinter.Entry(first_row_filters_frame, width=8)
     weight_filter_entry.pack(side="left", padx=(5, 10))
 
@@ -97,6 +114,7 @@ def load_window(language_code):
 
     purchase_date_filter_label = tkinter.Label(second_row_filters_frame, text=language_module.PURCHASE_DATE_TEXT)
     purchase_date_filter_label.pack(side="left", padx=5)
+    global purchase_date_filter_from_entry
     purchase_date_filter_from_entry = DateEntry(second_row_filters_frame, date_pattern=DATE_PATTERN, width=10)
     purchase_date_filter_from_entry.delete(0, "end")
     purchase_date_filter_from_entry.pack(side="left", padx=0)
@@ -104,6 +122,7 @@ def load_window(language_code):
     purchase_date_clear_button1.pack(side="left", padx=(5, 0))
     purchase_date_to_filter_label = tkinter.Label(second_row_filters_frame, text=language_module.TO)
     purchase_date_to_filter_label.pack(side="left")
+    global purchase_date_filter_to_entry
     purchase_date_filter_to_entry = DateEntry(second_row_filters_frame, date_pattern=DATE_PATTERN, width=10)
     purchase_date_filter_to_entry.delete(0, "end")
     purchase_date_filter_to_entry.pack(side="left", padx=0)
@@ -112,11 +131,13 @@ def load_window(language_code):
 
     purchase_place_filter_label = tkinter.Label(second_row_filters_frame, text=language_module.PURCHASE_PLACE_TEXT)
     purchase_place_filter_label.pack(side="left", padx=5)
+    global purchase_place_filter_entry
     purchase_place_filter_entry = tkinter.Entry(second_row_filters_frame, width=15)
     purchase_place_filter_entry.pack(side="left", padx=5)
 
     categories_filter_label = tkinter.Label(second_row_filters_frame, text=language_module.CATEGORIES_TEXT)
     categories_filter_label.pack(side="left", padx=5)
+    global categories_filter_entry
     categories_filter_entry = tkinter.Entry(second_row_filters_frame, width=15)
     categories_filter_entry.pack(side="left", padx=5)
 
@@ -133,6 +154,7 @@ def load_window(language_code):
     add_edit_button = tkinter.Button(button_frame, text=language_module.ADD_EDIT_BUTTON_TEXT, command=add_edit_item, width=20, pady=10)
     add_edit_button.grid(row=0, column=1, padx=5)
 
+    global delete_button
     delete_button = tkinter.Button(button_frame, text=language_module.DELETE_BUTTON_TEXT, command=delete_selected_item, state="disabled", width=20, pady=10)
     delete_button.grid(row=0, column=2, padx=5)
 
