@@ -10,7 +10,7 @@ COLUMNS = ()
 DATE_PATTERN="dd/mm/yyyy"
 window = 1
 
-def reload_window(language_code):
+def load_window(language_code):
     global window
     if (window != 1):
         window.destroy()
@@ -164,7 +164,7 @@ def load_language_module(language_code):
 def change_language(language_code):
     global language_module
     language_module = load_language_module(language_code)
-    reload_window(language_code)
+    load_window(language_code)
 
 def display_data(sort_column="id", sort_order="DESC", filters=None):
     for row in tree.get_children():
@@ -386,4 +386,4 @@ def on_treeview_sort_column(treeview, col, reverse):
 
     treeview.heading(col, command=lambda: on_treeview_sort_column(treeview, col, not reverse))
 
-reload_window("en")
+load_window("en")
