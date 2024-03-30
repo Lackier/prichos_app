@@ -5,7 +5,6 @@ import subprocess
 # Specify the required dependencies
 dependencies = ["tkcalendar", "pyinstaller", "ttkbootstrap"]
 
-# Install dependencies
 for dependency in dependencies:
     result = subprocess.run(["pip", "install", dependency])
     if result.returncode != 0:
@@ -14,13 +13,12 @@ for dependency in dependencies:
 
 main_script = "main.py"
 output_dir = os.path.dirname(os.path.abspath(main_script))
-exe_name = "PrichosApp.exe"  # Specify the desired name for the executable
+exe_name = "PrichosApp.exe"
 
-# Run PyInstaller to create the executable
 pyinstaller_args = [
-    "--onefile",            # Create one executable file
-    "--name", exe_name,     # Set the name of the executable file
-    main_script             # Main script to build
+    "--onefile",
+    "--name", exe_name,
+    main_script
 ]
 
 try:
