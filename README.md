@@ -8,8 +8,6 @@ IMPLEMENTED:
 - importing and exporting of data
 
 TODO
-- fix dates filters, they compare values lexiografically
-- make filters: Product name, Place, Categories be able to work with several values divided by comas
 - ttkbootstrap styles
 - optimize and refactor into clases and separate files
 - make graph plots with statistics

@@ -8,7 +8,7 @@ from text_en import *
 import importlib
 
 COLUMNS = ()
-DATE_PATTERN="dd/mm/yyyy"
+DATE_PATTERN="yyyy-mm-dd"
 window = 1
 language_module = 0
 delete_button = 0
@@ -149,7 +149,7 @@ def load_window(language_code):
     button_frame = tkinter.Frame(window)
     button_frame.pack(pady=10)
 
-    display_button = tkinter.Button(button_frame, text=language_module.SHOW_ALL_BUTTON_TEXT, command=lambda: display_data("id", "DESC"), width=20, pady=10)
+    display_button = tkinter.Button(button_frame, text=language_module.SHOW_ALL_BUTTON_TEXT, command=lambda: display_data("purchase_date", "DESC"), width=20, pady=10)
     display_button.grid(row=0, column=0, padx=5)
 
     add_edit_button = tkinter.Button(button_frame, text=language_module.ADD_EDIT_BUTTON_TEXT, command=add_edit_item, width=20, pady=10)
@@ -195,7 +195,8 @@ def change_language(language_code):
     language_module = load_language_module(language_code)
     load_window(language_code)
 
-def display_data(sort_column="id", sort_order="DESC", filters=None):
+
+def display_data(sort_column="purchase_date", sort_order="DESC", filters=None):
     for row in tree.get_children():
         tree.delete(row)
 
@@ -219,6 +220,11 @@ def display_data(sort_column="id", sort_order="DESC", filters=None):
                 elif column == 'purchase_date_to':
                     filter_conditions.append(f"purchase_date <= ?")
                     filter_values.append(f"{value}")
+                elif column in ['purchase_place', 'categories', 'product_name']:
+                    values = [v.strip() for v in value.split(',')]
+                    sub_conditions = [f"{column} LIKE ?" for _ in values]
+                    filter_conditions.append("(" + " OR ".join(sub_conditions) + ")")
+                    filter_values.extend([f"%{v}%" for v in values])
                 else:
                     filter_conditions.append(f"{column} LIKE ?")
                     filter_values.append(f"%{value}%")
@@ -303,6 +309,7 @@ def export_data():
             print("Data exported successfully.")
     except Exception as e:
         print("Error exporting data:", e)
+
 
 def add_edit_item(selected_item=None):
     add_edit_window = tkinter.Toplevel(window)
@@ -402,18 +409,6 @@ def delete_selected_item():
         conn.close()
         display_data()
 
-def on_item_double_click(event):
-    item = tree.selection()[0]
-    item_id = tree.item(item, "values")[0]
-    add_edit_item(item_id)
-
-def on_tree_select(event):
-    selected_item = tree.selection()
-    if selected_item:
-        delete_button.config(state="normal")
-    else:
-        delete_button.config(state="disabled")
-
 def apply_filters():
     product_name_filter = product_name_filter_entry.get()
     price_filter_from = price_filter_from_entry.get()
@@ -445,7 +440,20 @@ def apply_filters():
     if categories_filter:
         filters["categories"] = categories_filter
 
-    display_data(sort_column="id", sort_order="DESC", filters=filters)
+    display_data(sort_column="purchase_date", sort_order="DESC", filters=filters)
+
+
+def on_item_double_click(event):
+    item = tree.selection()[0]
+    item_id = tree.item(item, "values")[0]
+    add_edit_item(item_id)
+
+def on_tree_select(event):
+    selected_item = tree.selection()
+    if selected_item:
+        delete_button.config(state="normal")
+    else:
+        delete_button.config(state="disabled")
 
 def on_treeview_sort_column(treeview, col, reverse):
     for column in treeview["columns"]:
